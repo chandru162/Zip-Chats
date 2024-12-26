@@ -1,0 +1,27 @@
+.chatpage-div{
+    border: 1px solid black;
+    width: 800px;
+    height: 90vh;
+}
+
+.chatpage-top-div{
+    display:flex;
+    flex-direction: row;
+    border-bottom: 1px solid black;
+    /* height: 50px; */
+    /* background-color: aqua; */
+}
+span,img{
+    margin-left: 10px;
+    /* background-color: red; */
+    height: 50px;
+}
+
+.chat-input-div{
+    border-top: 1px solid black;
+    position: relative;
+    top: 450px;
+    /* margin-top: 423px; */
+    height:11%;
+    /* background-color: aquamarine; */
+}
