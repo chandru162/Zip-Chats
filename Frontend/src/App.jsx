@@ -13,8 +13,8 @@ import Login from './Components/Login';
 //css sections
 import '../src/Css/Sidebar.css';
 import '../src/App.css';
-import AuthProvider from './Context/Auth';
 import Profile from './Pages/Profile';
+import FriendList from './Pages/FriendList';
 /////////////
 
 // Assume you have user authentication in place
@@ -23,19 +23,18 @@ const userId = 'currentUserId';
 function App() {
   return (
     <div className='app-div'>
-      <AuthProvider>
       <SocketProvider userId={userId}>
         <Sidebar />
         <Routes>
-          <Route path='/' element={<ChatPage/>} />
+          <Route path='/' element={<FriendList/>} />
+          <Route path='/chatpage' element={<ChatPage/>} />
           <Route path='/login' element={<Login/>} />
           <Route path='/my-acount' element={<Profile/>} />
           <Route path='/register' element={<Register/>} />
           <Route path='/calls' element={<Callspage/>} />
-          <Route path='*' element={<Nopage />} />
+          <Route path='*' element={<Nopage/>} />
         </Routes>
       </SocketProvider>
-      </AuthProvider>
     </div>
   );
 }

@@ -106,7 +106,7 @@ exports.login = async (req, res, next) => {
     const token = jwt.sign({ id: updatedUser._id, email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     res.status(200).json({
-      message: "Login successfully! OTP sent to verify your account.",
+      message: "OTP sent to Sucessfully!,verify your account!",
       user: updatedUser,
       token,
     });
@@ -166,6 +166,7 @@ exports.profile = async (req, res, next) => {
     // Return user details
     res.status(200).json({
       user: {
+        _id: user._id,
         username: user.username,
         email: user.email,
         verified: user.verified,

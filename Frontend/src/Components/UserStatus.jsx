@@ -1,6 +1,6 @@
 // client/src/components/UserStatus.js
 import { useEffect, useState } from 'react';
-import { SocketContext } from '../context/SocketContext';
+import { SocketContext } from '../Context/SoketContext';
 import { useContext } from 'react';
 
 const UserStatus = () => {

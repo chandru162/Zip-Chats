@@ -10,12 +10,11 @@ const SocketProvider = ({ children, userId }) => {
     useEffect(() => {
         const socket = io("http://localhost:2500");
         setSocket(socket);
-        // console.log(socket.id)
 
         // Emit `userOnline` only after the socket is connected
         socket.on('connection', () => {
             socket.emit('userOnline', userId);
-            console.log(socket.userId)
+            console.log("user Id :",socket.userId)
         });
 
         // Cleanup on unmount

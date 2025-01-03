@@ -2,21 +2,21 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const authRoutes = require("./routes/authRoutes");
-const { ObjectId } = mongoose.Types;
+const authRoutes = require("./routes/authroutes");
+const userRoutes = require("./routes/userroutes");
+const adminRoutes = require("./routes/adminroutes");
+// Import models
+const Message = require("./models/messagemodele");
+const Group = require('./models/groupmodele');
+const User = require('./models/usermodele');
 
 dotenv.config();
 
 const app = express();
-// app.use(cors({
-//   origin: 'hhtp://localhost:5173', // Update to your frontend URL
-//   methods: ['GET', 'POST'],
-// }));
-// app.use(cors());
 
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'DELETE'],
+  methods: ['GET', 'POST','PUT','DELETE'],
   credentials: true
 }));
 
@@ -25,13 +25,21 @@ app.get('/', (req, res) => {
   res.send("home page");
 });
 app.use("/auth", authRoutes);
+app.use("/userrouter",userRoutes);
+app.use("/admin",adminRoutes);
 
 const path = require('path');
 app.use(express.static(path.join(__dirname, '../client/build')));
 
-// app.get('*', (req, res) => {
-//   res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
-// });
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+});
+
+
+
+
+
+/////////////////////////////...........
 
 // Connect to MongoDB and start server
 mongoose.connect(process.env.MONGO_URI).then(() => {
@@ -40,42 +48,34 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
   .then(() => {
     const PORT = process.env.PORT;
     const server = app.listen(PORT, () =>
-      console.log(`Server running on port ${PORT}`)
+      console.log(`Server running on port "http://localhost:${PORT}"`)
     );
 
     // Initialize Socket.io
     const io = require("socket.io")(server, {
       cors: {
         origin: "*", // Your client URL
-        methods: ['GET', 'POST' ,'DELETE']
+        methods: ['GET', 'POST']
       },
     });
 
-    // Import models
-    const Message = require("./models/messagemodele");
-    const Group = require('./models/groupmodele');
-
-    let onlineUsers = {}
+    let onlineUsers = {};
     io.on("connection", (socket) => {
-      console.log("New client connected",socket.id);
+      console.log("New client connected", socket.id);
 
       // Handle user online
       socket.on("userOnline", (userId) => {
         onlineUsers[userId] = socket.id;
         socket.emit("updateUserStatus", { userId, isOnline: true });
-        console.log("hello: ",userId)
+        console.log("Online :",userId)
       });
 
       // Handle sending messages
       socket.on("sendMessage", async (data) => {
         try {
-          if (!isValidObjectId(data.senderId) || !isValidObjectId(data.receiverId)) {
-            console.log("Invalid ObjectId format.");
-          }
-
           const senderId = data.senderId;
-          const receiverId = data.receiverId
-          
+          const receiverId = data.receiverId;
+
           const message = new Message({
             sender: senderId,
             receiver: receiverId,
@@ -88,15 +88,18 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
           const receiverSocket = onlineUsers[receiverId];
           if (receiverSocket) {
             io.to(receiverSocket).emit("receiveMessage", message);
+            console.log("receiveMessage :", message)
+          }else{
+            console.error("receiveMessage is not working!")
           }
         } catch (error) {
           console.error("Error processing message:", error);
-          // socket.emit("error", { message: "Failed to process message", error: error.message });
+          socket.emit("error", { message: "Failed to process message", error: error.message });
         }
       });
 
       // Handle group messages
-      io.on('sendGroupMessage', async (data) => {
+      socket.on('sendGroupMessage', async (data) => {
         const { senderId, groupId, content, type } = data;
         const message = new Message({ sender: senderId, group: groupId, content, type });
         await message.save();
@@ -123,13 +126,15 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
         console.log("Client disconnected");
       });
     });
-  })
-  .catch((err) => console.log(err));
 
 // Serve static files for uploads
 app.use('/uploads', express.static('uploads'));
 
 // Upload routes
 const uploadRoutes = require('./routes/uploadRoutes');
-app.use('/api/upload', uploadRoutes);
+app.use('/upload', uploadRoutes);
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB:", error);
+  });
 
